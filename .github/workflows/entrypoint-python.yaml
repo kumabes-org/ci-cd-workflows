@@ -1,0 +1,67 @@
+name: "Nested Entrypoint - Python CI/CD"
+
+on:
+  workflow_call:
+    inputs:
+      target-platform:
+        description: "Destino do deploy: ecs, eks, lambda ou glue"
+        required: true
+        type: string
+      app-name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        default: "dev"
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Lint & Tests
+        run: |
+          pip install ruff pytest
+          ruff check .
+          pytest
+
+  # Deploy condicional para ECS
+  deploy-ecs:
+    needs: quality-check
+    if: inputs.target-platform == 'ecs'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
+    with:
+      cluster-name: "${{ inputs.app-name }}-${{ inputs.environment }}-cluster"
+      service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
+      image-tag: ${{ github.sha }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}
+
+  # Deploy condicional para Lambda
+  deploy-lambda:
+    needs: quality-check
+    if: inputs.target-platform == 'lambda'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-lambda.yaml@v1
+    with:
+      function-name: "${{ inputs.app-name }}-${{ inputs.environment }}-fn"
+      package-type: "Zip"
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}
+
+  # Deploy condicional para AWS Glue
+  deploy-glue:
+    needs: quality-check
+    if: inputs.target-platform == 'glue'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-glue.yaml@v1
+    with:
+      job-name: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
+      script-path: "src/etl/main.py"
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}

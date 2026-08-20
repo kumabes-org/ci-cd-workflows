@@ -1,0 +1,42 @@
+name: "Engine - Deploy ECS"
+
+on:
+  workflow_call:
+    inputs:
+      cluster-name:
+        required: true
+        type: string
+      service-name:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  deploy-ecs:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Configure AWS Credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Update ECS Service
+        run: |
+          echo "Atualizando ECS Service ${{ inputs.service-name }} com tag ${{ inputs.image-tag }}"
+          aws ecs update-service \
+            --cluster ${{ inputs.cluster-name }} \
+            --service ${{ inputs.service-name }} \
+            --force-new-deployment
