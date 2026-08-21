@@ -1,0 +1,70 @@
+name: "Nested Entrypoint - Java CI/CD"
+
+on:
+  workflow_call:
+    inputs:
+      target-platform:
+        description: "Destino do deploy: ecs ou eks"
+        required: true
+        type: string
+      app-name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        default: "dev"
+      java-version:
+        required: false
+        type: string
+        default: "21"
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java-version }}
+          distribution: "temurin"
+          cache: "maven"
+      - name: Run Maven Build & Test
+        run: mvn clean verify --batch-mode
+
+  build-image:
+    needs: build-and-test
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
+    with:
+      ecr-repository: "${{ inputs.app-name }}"
+      image-tag: ${{ github.sha }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}
+
+  deploy-ecs:
+    needs: build-image
+    if: inputs.target-platform == 'ecs'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
+    with:
+      cluster-name: "${{ inputs.app-name }}-${{ inputs.environment }}-cluster"
+      service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
+      image-tag: ${{ github.sha }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}
+
+  deploy-eks:
+    needs: build-image
+    if: inputs.target-platform == 'eks'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-eks.yaml@v1
+    with:
+      cluster-name: "eks-${{ inputs.environment }}"
+      namespace: "${{ inputs.app-name }}-${{ inputs.environment }}"
+      deployment-name: "${{ inputs.app-name }}"
+      container-name: "${{ inputs.app-name }}"
+      image-uri: ${{ needs.build-image.outputs.image-uri }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}

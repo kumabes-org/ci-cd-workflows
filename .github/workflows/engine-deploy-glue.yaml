@@ -1,0 +1,52 @@
+name: "Engine - Deploy Glue"
+
+on:
+  workflow_call:
+    inputs:
+      job-name:
+        required: true
+        type: string
+      s3-bucket:
+        required: true
+        type: string
+      s3-prefix:
+        required: false
+        type: string
+        default: "glue-scripts"
+      local-script-path:
+        required: false
+        type: string
+        default: "src/etl/main.py"
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  deploy-glue:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Sync Script to S3
+        run: |
+          aws s3 cp ${{ inputs.local-script-path }} s3://${{ inputs.s3-bucket }}/${{ inputs.s3-prefix }}/${{ inputs.job-name }}.py
+
+      - name: Update Glue Job Script Location
+        run: |
+          aws glue update-job \
+            --job-name ${{ inputs.job-name }} \
+            --job-update "Role=AWSGlueServiceRoleDefault,Command={Name=glueetl,ScriptLocation=s3://${{ inputs.s3-bucket }}/${{ inputs.s3-prefix }}/${{ inputs.job-name }}.py,PythonVersion=3}" \
+            --region ${{ inputs.aws-region }}

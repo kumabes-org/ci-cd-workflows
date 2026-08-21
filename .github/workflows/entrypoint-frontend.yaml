@@ -1,0 +1,99 @@
+name: "Nested Entrypoint - Frontend (React/TS) CI/CD"
+
+on:
+  workflow_call:
+    inputs:
+      target-platform:
+        description: "Destino: s3-cloudfront ou ecs"
+        required: false
+        type: string
+        default: "s3-cloudfront"
+      app-name:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+        default: "dev"
+      s3-bucket:
+        required: false
+        type: string
+        default: ""
+      cloudfront-distribution-id:
+        required: false
+        type: string
+        default: ""
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+      - name: Install & Test
+        run: |
+          npm ci
+          npm run lint
+          npm test -- --watchAll=false
+      - name: Build Static Assets
+        run: npm run build
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-dist
+          path: dist/
+
+  deploy-s3-cloudfront:
+    needs: build-and-test
+    if: inputs.target-platform == 's3-cloudfront'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: static-dist
+          path: dist/
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: "us-east-1"
+      - name: Sync Files to S3
+        run: |
+          aws s3 sync dist/ s3://${{ inputs.s3-bucket }} --delete
+      - name: Invalidate CloudFront Cache
+        if: inputs.cloudfront-distribution-id != ''
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ inputs.cloudfront-distribution-id }} \
+            --paths "/*"
+
+  # Rota para aplicações SSR (Next.js / Remix rodando em container ECS)
+  build-container:
+    needs: build-and-test
+    if: inputs.target-platform == 'ecs'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
+    with:
+      ecr-repository: "${{ inputs.app-name }}"
+      image-tag: ${{ github.sha }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}
+
+  deploy-ecs:
+    needs: build-container
+    if: inputs.target-platform == 'ecs'
+    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
+    with:
+      cluster-name: "${{ inputs.app-name }}-${{ inputs.environment }}-cluster"
+      service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
+      image-tag: ${{ github.sha }}
+    secrets:
+      aws-role-arn: ${{ secrets.aws-role-arn }}

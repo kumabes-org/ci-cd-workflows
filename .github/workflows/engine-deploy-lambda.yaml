@@ -1,0 +1,58 @@
+name: "Engine - Deploy Lambda"
+
+on:
+  workflow_call:
+    inputs:
+      function-name:
+        required: true
+        type: string
+      package-type:
+        required: false
+        type: string
+        default: "Zip" # 'Zip' ou 'Image'
+      artifact-path:
+        required: false
+        type: string
+        default: "dist/function.zip"
+      image-uri:
+        required: false
+        type: string
+        default: ""
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
+    secrets:
+      aws-role-arn:
+        required: true
+
+jobs:
+  deploy-lambda:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Deploy Lambda via Zip Package
+        if: inputs.package-type == 'Zip'
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ inputs.function-name }} \
+            --zip-file fileb://${{ inputs.artifact-path }} \
+            --region ${{ inputs.aws-region }}
+
+      - name: Deploy Lambda via Container Image
+        if: inputs.package-type == 'Image'
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ inputs.function-name }} \
+            --image-uri ${{ inputs.image-uri }} \
+            --region ${{ inputs.aws-region }}
