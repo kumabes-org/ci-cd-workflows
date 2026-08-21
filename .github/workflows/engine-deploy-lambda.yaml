@@ -22,16 +22,14 @@ on:
         required: false
         type: string
         default: "us-east-1"
-    secrets:
-      aws-role-arn:
-        required: true
 
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+  
 jobs:
   deploy-lambda:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/checkout@v7
 

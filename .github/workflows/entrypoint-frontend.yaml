@@ -23,10 +23,11 @@ on:
         required: false
         type: string
         default: ""
-    secrets:
-      aws-role-arn:
-        required: true
 
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+  
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -53,9 +54,6 @@ jobs:
     needs: build-and-test
     if: inputs.target-platform == 's3-cloudfront'
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - uses: actions/download-artifact@v4
         with:
@@ -80,20 +78,18 @@ jobs:
   build-container:
     needs: build-and-test
     if: inputs.target-platform == 'ecs'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
     with:
       ecr-repository: "${{ inputs.app-name }}"
       image-tag: ${{ github.sha }}
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit
 
   deploy-ecs:
     needs: build-container
     if: inputs.target-platform == 'ecs'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
     with:
       cluster-name: "${{ inputs.app-name }}-${{ inputs.environment }}-cluster"
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit

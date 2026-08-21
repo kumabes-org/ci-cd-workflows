@@ -37,36 +37,33 @@ jobs:
   build-container:
     needs: quality-check
     if: inputs.target-platform == 'ecs' || inputs.target-platform == 'eks'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
     with:
       ecr-repository: "${{ inputs.app-name }}"
       image-tag: ${{ github.sha }}
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit
 
   deploy-ecs:
     needs: build-container
     if: inputs.target-platform == 'ecs'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
     with:
       cluster-name: "${{ inputs.app-name }}-${{ inputs.environment }}-cluster"
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit
 
   deploy-eks:
     needs: build-container
     if: inputs.target-platform == 'eks'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-eks.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-eks.yaml@v1
     with:
       cluster-name: "eks-${{ inputs.environment }}"
       namespace: "${{ inputs.app-name }}-${{ inputs.environment }}"
       deployment-name: "${{ inputs.app-name }}"
       container-name: "${{ inputs.app-name }}"
       image-uri: ${{ needs.build-container.outputs.image-uri }}
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit
 
   package-lambda:
     needs: quality-check
@@ -90,10 +87,9 @@ jobs:
   deploy-lambda:
     needs: package-lambda
     if: inputs.target-platform == 'lambda'
-    uses: sua-org/ci-cd-workflows/.github/workflows/engine-deploy-lambda.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-lambda.yaml@v1
     with:
       function-name: "${{ inputs.app-name }}-${{ inputs.environment }}-fn"
       package-type: "Zip"
       artifact-path: "function.zip"
-    secrets:
-      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
+    secrets: inherit
