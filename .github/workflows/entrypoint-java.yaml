@@ -43,7 +43,7 @@ jobs:
       ecr-repository: "${{ inputs.app-name }}"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   deploy-ecs:
     needs: build-image
@@ -54,7 +54,7 @@ jobs:
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   deploy-eks:
     needs: build-image
@@ -67,4 +67,4 @@ jobs:
       container-name: "${{ inputs.app-name }}"
       image-uri: ${{ needs.build-image.outputs.image-uri }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}

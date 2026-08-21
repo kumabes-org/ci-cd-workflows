@@ -64,7 +64,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ secrets.aws-role-arn }}
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region: "us-east-1"
       - name: Sync Files to S3
         run: |
@@ -85,7 +85,7 @@ jobs:
       ecr-repository: "${{ inputs.app-name }}"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   deploy-ecs:
     needs: build-container
@@ -96,4 +96,4 @@ jobs:
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}

@@ -43,7 +43,7 @@ jobs:
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   # Deploy condicional para Lambda
   deploy-lambda:
@@ -54,7 +54,7 @@ jobs:
       function-name: "${{ inputs.app-name }}-${{ inputs.environment }}-fn"
       package-type: "Zip"
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   # Deploy condicional para AWS Glue
   deploy-glue:
@@ -66,4 +66,4 @@ jobs:
       s3-bucket: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
       local-script-path: "src/etl/main.py"
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}

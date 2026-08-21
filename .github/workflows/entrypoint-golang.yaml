@@ -42,7 +42,7 @@ jobs:
       ecr-repository: "${{ inputs.app-name }}"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   deploy-ecs:
     needs: build-container
@@ -53,7 +53,7 @@ jobs:
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       image-tag: ${{ github.sha }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   deploy-eks:
     needs: build-container
@@ -66,7 +66,7 @@ jobs:
       container-name: "${{ inputs.app-name }}"
       image-uri: ${{ needs.build-container.outputs.image-uri }}
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
 
   package-lambda:
     needs: quality-check
@@ -96,4 +96,4 @@ jobs:
       package-type: "Zip"
       artifact-path: "function.zip"
     secrets:
-      aws-role-arn: ${{ secrets.aws-role-arn }}
+      aws-role-arn: ${{ secrets.ROLE_TO_ASSUME }}
