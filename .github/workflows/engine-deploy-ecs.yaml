@@ -9,13 +9,53 @@ on:
       service-name:
         required: true
         type: string
-      image-tag:
+      task-definition-family:
+        required: true
+        type: string
+      container-name:
+        required: true
+        type: string
+      image-uri:
         required: true
         type: string
       aws-region:
         required: false
         type: string
         default: "us-east-1"
+      cpu:
+        required: false
+        type: string
+        default: "256"
+      memory:
+        required: false
+        type: string
+        default: "512"
+      execution-role-arn:
+        required: true
+        type: string
+      task-role-arn:
+        required: false
+        type: string
+        default: ""
+      subnets:
+        description: "Lista separada por vírgulas de Subnet IDs para awsvpc/Fargate"
+        required: false
+        type: string
+        default: ""
+      security-groups:
+        description: "Lista separada por vírgulas de Security Group IDs"
+        required: false
+        type: string
+        default: ""
+      desired-count:
+        required: false
+        type: number
+        default: 1
+      launch-type:
+        required: false
+        type: string
+        default: "FARGATE"
+
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -25,16 +65,138 @@ jobs:
   deploy-ecs:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v7
+
       - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region: ${{ inputs.aws-region }}
 
-      - name: Update ECS Service
+      - name: Upsert Task Definition
+        id: upsert-task-def
+        env:
+          FAMILY: ${{ inputs.task-definition-family }}
+          CONTAINER_NAME: ${{ inputs.container-name }}
+          IMAGE_URI: ${{ inputs.image-uri }}
+          EXEC_ROLE: ${{ inputs.execution-role-arn }}
+          TASK_ROLE: ${{ inputs.task-role-arn }}
+          CPU: ${{ inputs.cpu }}
+          MEMORY: ${{ inputs.memory }}
+          REGION: ${{ inputs.aws-region }}
         run: |
-          echo "Atualizando ECS Service ${{ inputs.service-name }} com tag ${{ inputs.image-tag }}"
-          aws ecs update-service \
+          echo "Verificando se Task Definition '$FAMILY' ja existe..."
+          
+          if aws ecs describe-task-definition --task-definition "$FAMILY" >/dev/null 2>&1; then
+            echo "Task Definition existente. Obtendo a última revisão e atualizando imagem..."
+            
+            # Baixa a definição atual limpando metadados de sistema da AWS
+            aws ecs describe-task-definition --task-definition "$FAMILY" \
+              --query 'taskDefinition.{
+                family: family,
+                taskRoleArn: taskRoleArn,
+                executionRoleArn: executionRoleArn,
+                networkMode: networkMode,
+                containerDefinitions: containerDefinitions,
+                volumes: volumes,
+                placementConstraints: placementConstraints,
+                requiresCompatibilities: requiresCompatibilities,
+                cpu: cpu,
+                memory: memory
+              }' > base-task-def.json
+
+            # Substitui a imagem no container especificado
+            jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" \
+              '(.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE' \
+              base-task-def.json > task-def-payload.json
+          else
+            echo "Task Definition nao encontrada. Criando estrutura inicial..."
+            
+            # Gera JSON mínimo compatível com FARGATE/AWSVPC
+            cat <<EOF > task-def-payload.json
+            {
+              "family": "$FAMILY",
+              "networkMode": "awsvpc",
+              "requiresCompatibilities": ["FARGATE"],
+              "cpu": "$CPU",
+              "memory": "$MEMORY",
+              "executionRoleArn": "$EXEC_ROLE",
+              $([ -n "$TASK_ROLE" ] && echo "\"taskRoleArn\": \"$TASK_ROLE\"," || true)
+              "containerDefinitions": [
+                {
+                  "name": "$CONTAINER_NAME",
+                  "image": "$IMAGE_URI",
+                  "essential": true,
+                  "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                      "awslogs-group": "/ecs/$FAMILY",
+                      "awslogs-region": "$REGION",
+                      "awslogs-stream-prefix": "ecs",
+                      "awslogs-create-group": "true"
+                    }
+                  }
+                }
+              ]
+            }
+          EOF
+          fi
+
+          # Registra nova revisão
+          TASK_DEF_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://task-def-payload.json \
+            --query 'taskDefinition.taskDefinitionArn' \
+            --output text)
+            
+          echo "Task Definition registrada: $TASK_DEF_ARN"
+          echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
+
+      - name: Upsert ECS Service
+        env:
+          CLUSTER: ${{ inputs.cluster-name }}
+          SERVICE: ${{ inputs.service-name }}
+          TASK_DEF_ARN: ${{ steps.upsert-task-def.outputs.task_def_arn }}
+          DESIRED_COUNT: ${{ inputs.desired-count }}
+          LAUNCH_TYPE: ${{ inputs.launch-type }}
+          SUBNETS: ${{ inputs.subnets }}
+          SECURITY_GROUPS: ${{ inputs.security-groups }}
+        run: |
+          echo "Verificando se o Service '$SERVICE' existe no Cluster '$CLUSTER'..."
+
+          SERVICE_STATUS=$(aws ecs describe-services \
+            --cluster "$CLUSTER" \
+            --services "$SERVICE" \
+            --query 'services[?status==`ACTIVE`].status' \
+            --output text)
+
+          if [ "$SERVICE_STATUS" != "ACTIVE" ]; then
+            echo "Service nao existe ou esta inativo. Criando novo service..."
+            
+            # Monta configuracao de rede caso subnets tenham sido fornecidas
+            NETWORK_CONFIG=""
+            if [ -n "$SUBNETS" ]; then
+              NETWORK_CONFIG="--network-configuration awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=ENABLED}"
+            fi
+
+            aws ecs create-service \
+              --cluster "$CLUSTER" \
+              --service-name "$SERVICE" \
+              --task-definition "$TASK_DEF_ARN" \
+              --desired-count "$DESIRED_COUNT" \
+              --launch-type "$LAUNCH_TYPE" \
+              $NETWORK_CONFIG
+          else
+            echo "Service existente. Executando update com nova Task Definition..."
+            aws ecs update-service \
+              --cluster "$CLUSTER" \
+              --service "$SERVICE" \
+              --task-definition "$TASK_DEF_ARN" \
+              --force-new-deployment
+          fi
+
+      - name: Wait for Service Stability
+        run: |
+          echo "Aguardando estabilização do deploy..."
+          aws ecs wait services-stable \
             --cluster ${{ inputs.cluster-name }} \
-            --service ${{ inputs.service-name }} \
-            --force-new-deployment
+            --services ${{ inputs.service-name }}

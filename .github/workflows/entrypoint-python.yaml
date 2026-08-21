@@ -34,15 +34,29 @@ jobs:
           ruff check .
           pytest
 
+  # Publish (ECR)
+  publish-ecr:
+    needs: quality-check
+    if: inputs.target-platform == 'ecs'
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-publish-ecr.yaml@v1
+    with:
+      repository-name: ${{ inputs.app-name }}
+      image-tag: ${{ github.sha }}
+      aws-region: ${{ inputs.aws-region }}
+    secrets: inherit
+
   # Deploy condicional para ECS
   deploy-ecs:
-    needs: quality-check
+    needs: publish-ecr
     if: inputs.target-platform == 'ecs'
     uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-ecs.yaml@v1
     with:
       cluster-name: "${{ inputs.cluster-name }}"
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
-      image-tag: ${{ github.sha }}
+      task-definition-family: "${{ inputs.app-name }}-${{ inputs.environment }}-tsk"
+      container-name: "${{ inputs.app-name }}-${{ inputs.environment }}-ctr"
+      image-uri: "${{ steps.publish-ecr.outputs.image-uri }}"
+      execution-role-arn: "${{ secrets.ROLE_TO_ASSUME }}"
     secrets: inherit
 
   # Deploy condicional para Lambda
