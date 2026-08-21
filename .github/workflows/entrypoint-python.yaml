@@ -60,7 +60,6 @@ jobs:
       task-definition-family: "${{ inputs.app-name }}-${{ inputs.environment }}-tsk"
       container-name: "${{ inputs.app-name }}-${{ inputs.environment }}-ctr"
       image-uri: ${{ needs.publish-ecr.outputs.image-uri }}
-      execution-role-arn: "${{ secrets.ROLE_TO_ASSUME }}"
     secrets: inherit
 
   # Deploy condicional para Lambda

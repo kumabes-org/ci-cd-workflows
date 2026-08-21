@@ -30,9 +30,6 @@ on:
         required: false
         type: string
         default: "512"
-      execution-role-arn:
-        required: true
-        type: string
       task-role-arn:
         required: false
         type: string
@@ -79,7 +76,7 @@ jobs:
           FAMILY: ${{ inputs.task-definition-family }}
           CONTAINER_NAME: ${{ inputs.container-name }}
           IMAGE_URI: ${{ inputs.image-uri }}
-          EXEC_ROLE: ${{ inputs.execution-role-arn }}
+          EXEC_ROLE: ${{ secrets.ROLE_TO_ASSUME }}
           TASK_ROLE: ${{ inputs.task-role-arn }}
           CPU: ${{ inputs.cpu }}
           MEMORY: ${{ inputs.memory }}
