@@ -16,7 +16,7 @@ on:
       build-context:
         required: false
         type: string
-        default: "."
+        default: "./app"
       aws-region:
         required: false
         type: string
@@ -35,7 +35,6 @@ jobs:
     defaults:
       run:
         shell: bash
-        working-directory: "${{ github.workspace }}/app"
     runs-on: ubuntu-latest
     outputs:
       image-uri: ${{ steps.build-image.outputs.image }}
@@ -66,6 +65,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: ${{ inputs.build-context }}
+          file: ${{ inputs.dockerfile-path }}
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
           cache-from: type=gha
