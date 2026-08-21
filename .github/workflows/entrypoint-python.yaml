@@ -44,7 +44,7 @@ jobs:
     if: inputs.target-platform == 'ecs'
     uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
     with:
-      repository-name: ${{ inputs.app-name }}
+      ecr-repository: ${{ inputs.app-name }}
       image-tag: ${{ github.sha }}
       aws-region: ${{ inputs.aws-region }}
     secrets: inherit
