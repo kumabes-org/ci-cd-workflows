@@ -42,7 +42,7 @@ jobs:
   publish-ecr:
     needs: quality-check
     if: inputs.target-platform == 'ecs'
-    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-publish-ecr.yaml@v1
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-build-push-ecr.yaml@v1
     with:
       repository-name: ${{ inputs.app-name }}
       image-tag: ${{ github.sha }}
