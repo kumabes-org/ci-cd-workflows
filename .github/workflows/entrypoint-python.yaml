@@ -59,7 +59,7 @@ jobs:
       service-name: "${{ inputs.app-name }}-${{ inputs.environment }}-svc"
       task-definition-family: "${{ inputs.app-name }}-${{ inputs.environment }}-tsk"
       container-name: "${{ inputs.app-name }}-${{ inputs.environment }}-ctr"
-      image-uri: "${{ steps.publish-ecr.outputs.image-uri }}"
+      image-uri: ${{ needs.publish-ecr.outputs.image-uri }}
       execution-role-arn: "${{ secrets.ROLE_TO_ASSUME }}"
     secrets: inherit
 
