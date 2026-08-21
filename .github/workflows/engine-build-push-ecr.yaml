@@ -12,7 +12,7 @@ on:
       dockerfile-path:
         required: false
         type: string
-        default: "./Dockerfile"
+        default: "Dockerfile"
       build-context:
         required: false
         type: string
