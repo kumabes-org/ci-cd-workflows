@@ -32,6 +32,10 @@ permissions:
   
 jobs:
   build-push:
+    defaults:
+      run:
+        shell: bash
+        working-directory: "${{ github.workspace }}/app"
     runs-on: ubuntu-latest
     outputs:
       image-uri: ${{ steps.build-image.outputs.image }}
