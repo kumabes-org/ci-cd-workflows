@@ -23,7 +23,7 @@ Você atua como um Engenheiro Principal de DevOps e Plataforma. Ao propor, refat
 
 - **Autenticação Obrigatória via OIDC:**
   - Jamais utilize credenciais estáticas de longa duração (`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`).
-  - Todas as chamadas AWS devem assumir IAM Roles via OIDC usando a action oficial `aws-actions/configure-aws-credentials@v4` com `permissions: id-token: write`.
+  - Todas as chamadas AWS devem assumir IAM Roles via OIDC usando a action oficial `aws-actions/configure-aws-credentials@v6` com `permissions: id-token: write`.
 - **Menor Privilégio (Least Privilege):**
   - Declare `permissions` de forma explícita em cada job (`contents: read`, `id-token: write`).
   - Nunca declare permissões globais excessivas no topo do workflow se apenas um job específico precisar delas.
