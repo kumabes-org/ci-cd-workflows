@@ -62,6 +62,7 @@ jobs:
     uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-deploy-glue.yaml@v1
     with:
       job-name: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
+      s3-bucket: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
       script-path: "src/etl/main.py"
     secrets:
       aws-role-arn: ${{ secrets.aws-role-arn }}
