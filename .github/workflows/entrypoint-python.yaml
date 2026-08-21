@@ -63,6 +63,6 @@ jobs:
     with:
       job-name: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
       s3-bucket: "${{ inputs.app-name }}-${{ inputs.environment }}-etl"
-      script-path: "src/etl/main.py"
+      local-script-path: "src/etl/main.py"
     secrets:
       aws-role-arn: ${{ secrets.aws-role-arn }}
