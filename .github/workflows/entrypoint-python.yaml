@@ -17,7 +17,11 @@ on:
       cluster-name:
         required: false
         type: string
-        default: "default-cluster"  
+        default: "default-cluster"
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
         
 jobs:
   quality-check:
