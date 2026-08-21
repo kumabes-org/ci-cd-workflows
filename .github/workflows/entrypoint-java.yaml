@@ -18,9 +18,6 @@ on:
         required: false
         type: string
         default: "21"
-    secrets:
-      aws-role-arn:
-        required: true
 
 jobs:
   build-and-test:

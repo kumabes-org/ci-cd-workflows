@@ -14,9 +14,6 @@ on:
         required: true
         type: string
         default: "dev"
-    secrets:
-      aws-role-arn:
-        required: true
 
 jobs:
   quality-check:
