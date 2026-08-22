@@ -12,11 +12,11 @@ on:
       dockerfile-path:
         required: false
         type: string
-        default: "app/Dockerfile"
+        default: "Dockerfile"
       build-context:
         required: false
         type: string
-        default: "."
+        default: "./app"
       aws-region:
         required: false
         type: string
