@@ -175,6 +175,8 @@ jobs:
             if [ -n "$SUBNETS" ]; then
               NETWORK_CONFIG="--network-configuration awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=ENABLED}"
             fi
+            
+            echo "NETWORK_CONFIG=$NETWORK_CONFIG"
 
             aws ecs create-service \
               --cluster "$CLUSTER" \
