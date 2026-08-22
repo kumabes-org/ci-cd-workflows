@@ -38,12 +38,12 @@ on:
         description: "Lista separada por vírgulas de Subnet IDs para awsvpc/Fargate"
         required: false
         type: string
-        default: "[subnet-005ed2f9b6e47d07b, subnet-046eb8e8ba767383d]"
+        default: "subnet-005ed2f9b6e47d07b, subnet-046eb8e8ba767383d"
       security-groups:
         description: "Lista separada por vírgulas de Security Group IDs"
         required: false
         type: string
-        default: "[sg-02d6020e82d1e614e]"
+        default: "sg-02d6020e82d1e614e"
       desired-count:
         required: false
         type: number
