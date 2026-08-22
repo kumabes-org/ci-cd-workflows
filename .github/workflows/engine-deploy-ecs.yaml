@@ -30,6 +30,11 @@ on:
         required: false
         type: string
         default: "512"
+      log-retention-days:
+        description: "Periodo de retencao dos logs do CloudWatch em dias"
+        required: false
+        type: number
+        default: 30
       task-role-arn:
         required: false
         type: string
@@ -70,6 +75,24 @@ jobs:
           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region: ${{ inputs.aws-region }}
 
+      - name: Ensure CloudWatch Log Group
+        env:
+          FAMILY: ${{ inputs.task-definition-family }}
+          LOG_RETENTION_DAYS: ${{ inputs.log-retention-days }}
+        run: |
+          aws logs create-log-group --log-group-name "/ecs/$FAMILY" 2>/dev/null || {
+            if ! aws logs describe-log-groups \
+              --log-group-name-prefix "/ecs/$FAMILY" \
+              --query 'logGroups[?logGroupName==`/ecs/'"$FAMILY"'`]' \
+              --output text | grep -q "/ecs/$FAMILY"; then
+              echo "Nao foi possivel criar ou localizar o log group /ecs/$FAMILY" >&2
+              exit 1
+            fi
+          }
+          aws logs put-retention-policy \
+            --log-group-name "/ecs/$FAMILY" \
+            --retention-in-days "$LOG_RETENTION_DAYS"
+
       - name: Upsert Task Definition
         id: upsert-task-def
         env:
@@ -105,6 +128,7 @@ jobs:
             echo "Substitui a imagem no container especificado"
             jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" '
               ((.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE)
+              | ((.containerDefinitions[] | select(.name == $CNAME)).logConfiguration.options["awslogs-create-group"] = "false")
               | if .taskRoleArn == null then del(.taskRoleArn) else . end
             ' base-task-def.json > task-def-payload.json
           else
@@ -131,7 +155,7 @@ jobs:
                       "awslogs-group": "/ecs/$FAMILY",
                       "awslogs-region": "$REGION",
                       "awslogs-stream-prefix": "ecs",
-                      "awslogs-create-group": "true"
+                      "awslogs-create-group": "false"
                     }
                   }
                 }
