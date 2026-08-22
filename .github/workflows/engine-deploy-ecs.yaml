@@ -155,7 +155,7 @@ jobs:
                       "awslogs-group": "/ecs/$FAMILY",
                       "awslogs-region": "$REGION",
                       "awslogs-stream-prefix": "ecs",
-                      "awslogs-create-group": "false"
+                      "awslogs-create-group": "true"
                     }
                   }
                 }
