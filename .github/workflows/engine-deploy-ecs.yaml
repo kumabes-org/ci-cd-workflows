@@ -33,7 +33,7 @@ on:
       task-role-arn:
         required: false
         type: string
-        default: ""
+        default: "ecsTaskExecutionRole"
       subnets:
         description: "Lista separada por vírgulas de Subnet IDs para awsvpc/Fargate"
         required: false
@@ -76,7 +76,7 @@ jobs:
           FAMILY: ${{ inputs.task-definition-family }}
           CONTAINER_NAME: ${{ inputs.container-name }}
           IMAGE_URI: ${{ inputs.image-uri }}
-          EXEC_ROLE: ${{ secrets.ROLE_TO_ASSUME }}
+          EXEC_ROLE: ${{ inputs.task-role-arn }}
           TASK_ROLE: ${{ inputs.task-role-arn }}
           CPU: ${{ inputs.cpu }}
           MEMORY: ${{ inputs.memory }}
@@ -175,7 +175,7 @@ jobs:
             if [ -n "$SUBNETS" ]; then
               NETWORK_CONFIG="--network-configuration awsvpcConfiguration={subnets=[$SUBNETS],securityGroups=[$SECURITY_GROUPS],assignPublicIp=ENABLED}"
             fi
-            
+
             echo "NETWORK_CONFIG=$NETWORK_CONFIG"
 
             aws ecs create-service \
