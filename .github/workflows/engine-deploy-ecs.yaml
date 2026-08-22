@@ -87,7 +87,7 @@ jobs:
           if aws ecs describe-task-definition --task-definition "$FAMILY" >/dev/null 2>&1; then
             echo "Task Definition existente. Obtendo a última revisão e atualizando imagem..."
             
-            # Baixa a definição atual limpando metadados de sistema da AWS
+            echo "Baixa a definição atual limpando metadados de sistema da AWS"
             aws ecs describe-task-definition --task-definition "$FAMILY" \
               --query 'taskDefinition.{
                 family: family,
@@ -102,14 +102,14 @@ jobs:
                 memory: memory
               }' > base-task-def.json
 
-            # Substitui a imagem no container especificado
+            echo "Substitui a imagem no container especificado"
             jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" \
               '(.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE' \
               base-task-def.json > task-def-payload.json
           else
             echo "Task Definition nao encontrada. Criando estrutura inicial..."
             
-            # Gera JSON mínimo compatível com FARGATE/AWSVPC
+            echo "Gera JSON mínimo compatível com FARGATE/AWSVPC"
             cat <<EOF > task-def-payload.json
             {
               "family": "$FAMILY",
