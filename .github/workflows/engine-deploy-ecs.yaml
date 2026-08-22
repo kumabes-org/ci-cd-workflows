@@ -103,9 +103,10 @@ jobs:
               }' > base-task-def.json
 
             echo "Substitui a imagem no container especificado"
-            jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" \
-              '(.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE' \
-              base-task-def.json > task-def-payload.json
+            jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" '
+              ((.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE)
+              | if .taskRoleArn == null then del(.taskRoleArn) else . end
+            ' base-task-def.json > task-def-payload.json
           else
             echo "Task Definition nao encontrada. Criando estrutura inicial..."
             
@@ -139,7 +140,7 @@ jobs:
           EOF
           fi
 
-          # Registra nova revisão
+          echo "Registra nova revisão"
           TASK_DEF_ARN=$(aws ecs register-task-definition \
             --cli-input-json file://task-def-payload.json \
             --query 'taskDefinition.taskDefinitionArn' \
