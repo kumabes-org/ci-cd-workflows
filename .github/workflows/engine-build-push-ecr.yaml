@@ -12,11 +12,11 @@ on:
       dockerfile-path:
         required: false
         type: string
-        default: "Dockerfile"
+        default: "app/Dockerfile"
       build-context:
         required: false
         type: string
-        default: "./app"
+        default: "."
       aws-region:
         required: false
         type: string
@@ -59,6 +59,9 @@ jobs:
           echo "Estou no diretório: $(pwd)"
           echo "Exibindo o conteúdo do diretório:"
           ls -lrtha --color
+          echo "build-context: ${{ inputs.build-context }}"
+          echo "dockerfile-path: ${{ inputs.dockerfile-path }}"
+          ls -lrth ${{ inputs.build-context }}/${{ inputs.dockerfile-path }}
 
       - name: Build and Push Docker Image
         id: build-image
