@@ -32,7 +32,7 @@ on:
 jobs:
   ci-terraform:
     name: "CI"
-    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-ci-terraform.yaml@feature/terraform
+    uses: ./.github/workflows/engine-ci-terraform.yaml
     with:
       provider: ${{ inputs.provider }}
       environment: ${{ inputs.environment }}
@@ -44,7 +44,7 @@ jobs:
   cd-terraform:
     name: "CD"
     needs: [ci-terraform]
-    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-cd-terraform.yaml@feature/terraform
+    uses: ./.github/workflows/engine-cd-terraform.yaml
     with:
       provider: ${{ inputs.provider }}
       environment: ${{ inputs.environment }}
