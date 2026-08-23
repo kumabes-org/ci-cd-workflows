@@ -20,32 +20,17 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "db_name" {
-  description = "Nome do banco de dados"
+variable "name" {
+  description = "(Required) Name of the parameter. If the name contains a path (e.g., any forward slashes (/)), it must be fully qualified with a leading forward slash (/). For additional requirements and constraints, see the AWS SSM User Guide."
   type        = string
-  default     = "ecommerce"
 }
 
-variable "db_username" {
-  description = "Nome do usuário do banco de dados"
+variable "type" {
+  description = "(Required) Type of the parameter. Valid types are String, StringList and SecureString."
   type        = string
-  default     = "postgres"
 }
 
-variable "db_url" {
-  description = "URL do banco de dados"
+variable "value" {
+  description = "(Optional, exactly one of value, value_wo or insecure_value is required) Value of the parameter. This value is always marked as sensitive in the Terraform plan output, regardless of type. In Terraform CLI version 0.15 and later, this may require additional configuration handling for certain scenarios. For more information, see the Terraform v0.15 Upgrade Guide."
   type        = string
-  default     = "jdbc:postgresql://localhost"
-}
-
-variable "db_port" {
-  description = "Porta do banco de dados"
-  type        = number
-  default     = 5432
-}
-
-variable "db_schema" {
-  description = "Nome do schema do banco de dados"
-  type        = string
-  default     = "public"
 }
