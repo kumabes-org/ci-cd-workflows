@@ -33,3 +33,46 @@ jobs:
         uses: reviewdog/action-actionlint@v1
         with:
           actionlint_flags: "-shellcheck="
+
+  # -------------------------------------------------------------
+  # Camada 2: Testes Unitários de Scripts Embutidos (JQ, Bash, Parsing)
+  # -------------------------------------------------------------
+  unit-test-inline-scripts:
+    name: "Unit Tests: Inline Scripts & Parsing"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test JQ Task Definition Transformation
+        run: |
+          # Simula a lógica de mutação da Task Definition usada no engine-deploy-ecs
+          SAMPLE_JSON='.github/harness/fixtures/task-def-sample.json'
+          mkdir -p .github/harness/fixtures
+          
+          # Cria fixture temporária se não existir
+          cat <<EOF > $SAMPLE_JSON
+          {
+            "family": "test-app-tsk",
+            "taskRoleArn": null,
+            "executionRoleArn": "arn:aws:iam::123456789012:role/exec",
+            "containerDefinitions": [{"name": "test-ctr", "image": "old-image:1.0"}]
+          }
+          EOF
+
+          IMAGE_URI="123456789012.dkr.ecr.us-east-1.amazonaws.com/test-app:v2.0"
+          CONTAINER_NAME="test-ctr"
+
+          OUTPUT=$(jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" '
+            ((.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE)
+            | with_entries(select(.value != null))
+          ' $SAMPLE_JSON)
+
+          # Asserção 1: Nova imagem injetada
+          echo "$OUTPUT" | jq -e ".containerDefinitions[] | select(.name == \"$CONTAINER_NAME\") | select(.image == \"$IMAGE_URI\")" > /dev/null \
+            || { echo "Erro: Falha ao injetar nova imagem!"; exit 1; }
+
+          # Asserção 2: taskRoleArn nulo foi removido
+          echo "$OUTPUT" | jq -e 'has("taskRoleArn") | not' > /dev/null \
+            || { echo "Erro: taskRoleArn nulo não foi removido!"; exit 1; }
+
+          echo "Todos os testes de transformação JQ passaram com sucesso."
