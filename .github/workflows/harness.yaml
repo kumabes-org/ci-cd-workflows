@@ -22,7 +22,7 @@ jobs:
     name: "Linter & Static Analysis"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Run Yamllint
         run: |
@@ -41,7 +41,7 @@ jobs:
     name: "Unit Tests: Inline Scripts & Parsing"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Test JQ Task Definition Transformation
         run: |
