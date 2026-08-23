@@ -48,7 +48,7 @@ jobs:
           # Simula a lógica de mutação da Task Definition usada no engine-deploy-ecs
           SAMPLE_JSON='.github/harness/fixtures/task-def-sample.json'
           mkdir -p .github/harness/fixtures
-          
+
           # Cria fixture temporária se não existir
           cat <<EOF > $SAMPLE_JSON
           {
