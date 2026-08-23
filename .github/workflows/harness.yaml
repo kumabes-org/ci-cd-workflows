@@ -81,6 +81,7 @@ jobs:
   # Camada 3: Validação de Contrato e Integração com Nested Workflows
   # -------------------------------------------------------------
   call-entrypoint-terraform-apply:
+    needs: [static-analysis, unit-test-inline-scripts]
     uses: ./.github/workflows/entrypoint-terraform.yaml
     with:
       provider: "aws"
