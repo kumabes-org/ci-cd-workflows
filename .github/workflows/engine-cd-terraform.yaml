@@ -52,7 +52,7 @@ jobs:
 
       - name: Configure AWS Credentials (OIDC)
         if: inputs.provider == 'aws'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
           aws-region: ${{ inputs.aws-region }}
