@@ -38,7 +38,7 @@ jobs:
       environment: ${{ inputs.environment }}
       aws-region: ${{ inputs.aws-region }}
       working-directory: ${{ inputs.working-directory }}
-      terraform-version: ${{ inputs.terraform-version }}     
+      terraform-version: ${{ inputs.terraform-version }}
     secrets: inherit
 
   cd-terraform:
@@ -51,5 +51,5 @@ jobs:
       action: ${{ inputs.action }}
       aws-region: ${{ inputs.aws-region }}
       working-directory: ${{ inputs.working-directory }}
-      terraform-version: ${{ inputs.terraform-version }}      
+      terraform-version: ${{ inputs.terraform-version }}
     secrets: inherit

@@ -22,14 +22,14 @@ on:
         required: false
         type: string
         default: "us-east-1"
-        
+
 jobs:
   quality-check:
     runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash
-        working-directory: "${{ github.workspace }}/app"    
+        working-directory: "${{ github.workspace }}/app"
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7

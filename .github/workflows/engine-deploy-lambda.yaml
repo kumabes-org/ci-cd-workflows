@@ -9,7 +9,7 @@ on:
       package-type:
         required: false
         type: string
-        default: "Zip" # 'Zip' ou 'Image'
+        default: "Zip" #  'Zip' ou 'Image'
       artifact-path:
         required: false
         type: string
@@ -26,7 +26,7 @@ on:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-  
+
 jobs:
   deploy-lambda:
     runs-on: ubuntu-latest

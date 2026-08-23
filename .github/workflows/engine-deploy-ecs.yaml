@@ -62,7 +62,7 @@ on:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-  
+
 jobs:
   deploy-ecs:
     runs-on: ubuntu-latest
@@ -106,10 +106,8 @@ jobs:
           REGION: ${{ inputs.aws-region }}
         run: |
           echo "Verificando se Task Definition '$FAMILY' ja existe..."
-          
           if aws ecs describe-task-definition --task-definition "$FAMILY" >/dev/null 2>&1; then
             echo "Task Definition existente. Obtendo a última revisão e atualizando imagem..."
-            
             echo "Baixa a definição atual limpando metadados de sistema da AWS"
             aws ecs describe-task-definition --task-definition "$FAMILY" \
               --query 'taskDefinition.{
@@ -124,7 +122,6 @@ jobs:
                 cpu: cpu,
                 memory: memory
               }' > base-task-def.json
-
             echo "Substitui a imagem no container especificado"
             jq --arg IMAGE "$IMAGE_URI" --arg CNAME "$CONTAINER_NAME" '
               ((.containerDefinitions[] | select(.name == $CNAME)).image = $IMAGE)
@@ -133,7 +130,6 @@ jobs:
             ' base-task-def.json > task-def-payload.json
           else
             echo "Task Definition nao encontrada. Criando estrutura inicial..."
-            
             echo "Gera JSON mínimo compatível com FARGATE/AWSVPC"
             cat <<EOF > task-def-payload.json
             {
@@ -169,7 +165,6 @@ jobs:
             --cli-input-json file://task-def-payload.json \
             --query 'taskDefinition.taskDefinitionArn' \
             --output text)
-            
           echo "Task Definition registrada: $TASK_DEF_ARN"
           echo "task_def_arn=$TASK_DEF_ARN" >> $GITHUB_OUTPUT
 
@@ -193,7 +188,6 @@ jobs:
 
           if [ "$SERVICE_STATUS" != "ACTIVE" ]; then
             echo "Service nao existe ou esta inativo. Criando novo service..."
-            
             # Monta configuracao de rede caso subnets tenham sido fornecidas
             NETWORK_CONFIG=""
             if [ -n "$SUBNETS" ]; then
