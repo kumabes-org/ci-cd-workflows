@@ -1,6 +1,6 @@
 name: "Engine - AWS OIDC Auth"
 
-on:
+"on":
   workflow_call:
     inputs:
       aws-region:
@@ -11,7 +11,7 @@ on:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-  
+
 jobs:
   auth:
     runs-on: ubuntu-latest

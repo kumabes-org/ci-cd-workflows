@@ -1,6 +1,6 @@
 name: "Nested Entrypoint - Frontend (React/TS) CI/CD"
 
-on:
+"on":
   workflow_call:
     inputs:
       target-platform:
@@ -27,7 +27,7 @@ on:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-  
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest

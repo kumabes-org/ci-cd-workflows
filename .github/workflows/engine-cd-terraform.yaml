@@ -1,6 +1,6 @@
 name: "Engine - CD Terraform"
 
-on:
+"on":
   workflow_call:
     inputs:
       provider:

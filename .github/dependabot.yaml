@@ -5,3 +5,8 @@ updates:
     schedule:
       # Check for updates to GitHub Actions every week
       interval: "weekly"
+  - package-ecosystem: "terraform"
+    directory: "/validate-terraform-workflow"
+    schedule:
+      # Check for updates to Terraform every week
+      interval: "weekly"      

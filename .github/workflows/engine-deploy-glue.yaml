@@ -1,6 +1,6 @@
 name: "Engine - Deploy Glue"
 
-on:
+"on":
   workflow_call:
     inputs:
       job-name:
@@ -25,7 +25,7 @@ on:
 permissions:
   id-token: write   # This is required for requesting the JWT
   contents: read    # This is required for actions/checkout
-  
+
 jobs:
   deploy-glue:
     runs-on: ubuntu-latest
@@ -46,5 +46,7 @@ jobs:
         run: |
           aws glue update-job \
             --job-name ${{ inputs.job-name }} \
-            --job-update "Role=AWSGlueServiceRoleDefault,Command={Name=glueetl,ScriptLocation=s3://${{ inputs.s3-bucket }}/${{ inputs.s3-prefix }}/${{ inputs.job-name }}.py,PythonVersion=3}" \
+            --job-update "Role=AWSGlueServiceRoleDefault, \
+              Command={Name=glueetl,ScriptLocation=s3://${{ inputs.s3-bucket }} \
+              /${{ inputs.s3-prefix }}/${{ inputs.job-name }}.py,PythonVersion=3}" \
             --region ${{ inputs.aws-region }}

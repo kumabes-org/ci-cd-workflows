@@ -1,6 +1,6 @@
 name: "Engine - Rust CI"
 
-on:
+"on":
   workflow_call:
     inputs:
       rust-version:
