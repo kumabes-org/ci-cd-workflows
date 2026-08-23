@@ -1,6 +1,6 @@
 name: "Engine - CI Terraform"
 
-on:
+"on":
   workflow_call:
     inputs:
       provider:

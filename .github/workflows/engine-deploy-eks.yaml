@@ -1,6 +1,6 @@
 name: "Engine - Deploy EKS"
 
-on:
+"on":
   workflow_call:
     inputs:
       cluster-name:

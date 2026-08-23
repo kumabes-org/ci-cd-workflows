@@ -1,6 +1,6 @@
 name: "Harness - Workflow Engine Quality & Tests"
 
-on:
+"on":
   pull_request:
     paths:
       - ".github/workflows/**"
@@ -33,4 +33,3 @@ jobs:
         uses: reviewdog/action-actionlint@v1
         with:
           actionlint_flags: "-shellcheck="
-

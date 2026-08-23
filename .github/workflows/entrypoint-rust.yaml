@@ -1,6 +1,6 @@
 name: "Nested Entrypoint - Rust CI"
 
-on:
+"on":
   workflow_call:
     inputs:
       target-platform:

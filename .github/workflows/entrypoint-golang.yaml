@@ -1,6 +1,6 @@
 name: "Nested Entrypoint - Golang CI/CD"
 
-on:
+"on":
   workflow_call:
     inputs:
       target-platform:

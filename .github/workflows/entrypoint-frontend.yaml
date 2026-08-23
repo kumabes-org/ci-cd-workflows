@@ -1,6 +1,6 @@
 name: "Nested Entrypoint - Frontend (React/TS) CI/CD"
 
-on:
+"on":
   workflow_call:
     inputs:
       target-platform:

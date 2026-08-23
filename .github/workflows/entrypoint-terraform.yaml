@@ -1,6 +1,6 @@
 name: "Nested Entrypoint - Terraform CI/CD"
 
-on:
+"on":
   workflow_call:
     inputs:
       provider:

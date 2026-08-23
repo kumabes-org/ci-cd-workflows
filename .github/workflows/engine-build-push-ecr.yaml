@@ -1,6 +1,6 @@
 name: "Engine - Build and Push ECR"
 
-on:
+"on":
   workflow_call:
     inputs:
       ecr-repository:

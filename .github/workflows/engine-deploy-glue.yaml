@@ -1,6 +1,6 @@
 name: "Engine - Deploy Glue"
 
-on:
+"on":
   workflow_call:
     inputs:
       job-name:
