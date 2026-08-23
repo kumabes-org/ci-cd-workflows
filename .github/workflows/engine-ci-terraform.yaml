@@ -1,0 +1,82 @@
+name: "Engine - CI Terraform"
+
+on:
+  workflow_call:
+    inputs:
+      provider:
+        description: "Cloud Provider: aws ou azure"
+        required: true
+        type: string
+      environment:
+        description: "Nome do ambiente (ex: dev, prod)"
+        required: true
+        type: string
+      working-directory:
+        required: false
+        type: string
+        default: "infra"
+      terraform-version:
+        required: false
+        type: string
+        default: "1.9.0"
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  validate-and-plan:
+    name: "Terraform Lint & Plan"
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_USE_OIDC: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        if: inputs.provider == 'aws'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.ROLE_TO_ASSUME }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Azure Login (OIDC)
+        if: inputs.provider == 'azure'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ inputs.terraform-version }}
+
+      - name: Terraform Fmt Check
+        run: terraform fmt -recursive -check
+
+      - name: Terraform Init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+            -var-file="variables/${{ inputs.environment }}/terraform.tfvars" \
+            -no-color \
+            -input=false

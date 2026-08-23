@@ -1,0 +1,43 @@
+name: "Nested Entrypoint - Terraform CI/CD"
+
+on:
+  workflow_call:
+    inputs:
+      provider:
+        description: "Cloud Provider: aws ou azure"
+        required: true
+        type: string
+      environment:
+        required: false
+        type: string
+        default: "dev"
+      action:
+        description: "apply ou destroy"
+        required: false
+        type: string
+        default: "apply"
+      aws-region:
+        required: false
+        type: string
+        default: "us-east-1"
+
+jobs:
+  ci-terraform:
+    name: "CI"
+    uses: kumabes-org/reusable-workflows-infra-terraform/.github/workflows/ci.yaml@v1
+    with:
+      provider: ${{ inputs.provider }}
+      environment: ${{ inputs.environment }}
+      aws-region: ${{ inputs.aws-region }}
+    secrets: inherit
+
+  cd-terraform:
+    name: "CD"
+    needs: [ci-terraform]
+    uses: kumabes-org/reusable-workflows-infra-terraform/.github/workflows/cd.yaml@v1
+    with:
+      provider: ${{ inputs.provider }}
+      environment: ${{ inputs.environment }}
+      action: ${{ inputs.action }}
+      aws-region: ${{ inputs.aws-region }}
+    secrets: inherit

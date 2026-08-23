@@ -22,6 +22,7 @@ Você é um Especialista em DevOps e CI/CD. Ao gerar ou refatorar workflows de G
 | **Golang** | `ecs`, `eks`, `lambda` | `entrypoint-golang.yaml` |
 | **Python** | `ecs`, `eks`, `lambda`, `glue` | `entrypoint-python.yaml` |
 | **Node.js (React/TS)** | `s3-cloudfront`, `ecs` | `entrypoint-frontend.yaml` |
+| **Rust** | `ci` | `entrypoint-rust.yaml` |
 
 ## Checklist de Geração
 - [ ] O workflow consumidor usa `uses: .../entrypoint-*.yaml@v1`?

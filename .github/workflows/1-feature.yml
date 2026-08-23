@@ -1,0 +1,27 @@
+name: "1 - Feature"
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'hotfix/**'
+
+jobs:
+  call-entrypoint-terraform-apply:
+    uses: ./.github/workflows/entrypoint-terraform.yaml
+    with:
+      provider: "aws"
+      environment: "dev"
+      action: "apply"
+      aws-region: "us-east-1"      
+    secrets: inherit
+
+  call-entrypoint-terraform-destroy:
+    needs: [call-entrypoint-terraform-apply]
+    uses: ./.github/workflows/entrypoint-terraform.yaml
+    with:
+      provider: "aws"
+      environment: "dev"
+      action: "destroy"
+      aws-region: "us-east-1"      
+    secrets: inherit    

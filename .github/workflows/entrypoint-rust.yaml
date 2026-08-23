@@ -1,0 +1,47 @@
+name: "Nested Entrypoint - Rust CI"
+
+on:
+  workflow_call:
+    inputs:
+      target-platform:
+        description: "Destino do workflow: ci"
+        required: false
+        type: string
+        default: "ci"
+      app-name:
+        description: "Nome da aplicacao"
+        required: false
+        type: string
+        default: "rust-app"
+      environment:
+        description: "Ambiente da aplicacao"
+        required: false
+        type: string
+        default: "ci"
+      rust-version:
+        description: "Toolchain Rust usada no CI"
+        required: false
+        type: string
+        default: "stable"
+      working-directory:
+        description: "Diretorio do projeto Rust"
+        required: false
+        type: string
+        default: "."
+      run-build:
+        description: "Executa cargo build --locked"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  rust-ci:
+    if: inputs.target-platform == 'ci'
+    uses: kumabes-org/ci-cd-workflows/.github/workflows/engine-ci-rust.yaml@v1
+    with:
+      rust-version: ${{ inputs.rust-version }}
+      working-directory: ${{ inputs.working-directory }}
+      run-build: ${{ inputs.run-build }}
