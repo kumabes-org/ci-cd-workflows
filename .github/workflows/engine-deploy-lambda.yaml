@@ -9,7 +9,7 @@ name: "Engine - Deploy Lambda"
       package-type:
         required: false
         type: string
-        default: "Zip" #  'Zip' ou 'Image'
+        default: "Zip"   # 'Zip' ou 'Image'
       artifact-path:
         required: false
         type: string
