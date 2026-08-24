@@ -19,10 +19,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Extrai a major version da tag da release (ex: v1.2.3 -> v1)
           MAJOR_TAG=$(echo "${{ github.event.release.tag_name }}" | grep -oE '^v[0-9]+')
-          
+
           if [ -n "$MAJOR_TAG" ]; then
             echo "Movendo a tag $MAJOR_TAG para o commit atual..."
             git tag -fa "$MAJOR_TAG" -m "Release ${{ github.event.release.tag_name }}"
