@@ -4,17 +4,27 @@ name: 'Publish Immutable Action Version'
   release:
     types: [published]
 
-jobs:
-  publish:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-      packages: write
+permissions:
+  contents: write
 
+jobs:
+  update-tag:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checking out
-        uses: actions/checkout@v7
-      - name: Publish
-        id: publish
-        uses: actions/publish-immutable-action@v0.0.4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Major Tag (e.g. v1)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Extrai a major version da tag da release (ex: v1.2.3 -> v1)
+          MAJOR_TAG=$(echo "${{ github.event.release.tag_name }}" | grep -oE '^v[0-9]+')
+          
+          if [ -n "$MAJOR_TAG" ]; then
+            echo "Movendo a tag $MAJOR_TAG para o commit atual..."
+            git tag -fa "$MAJOR_TAG" -m "Release ${{ github.event.release.tag_name }}"
+            git push origin "$MAJOR_TAG" --force
+          fi
