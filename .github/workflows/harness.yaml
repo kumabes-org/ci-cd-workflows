@@ -106,7 +106,7 @@ jobs:
 
   call-entrypoint-python:
     needs: [static-analysis, unit-test-inline-scripts]
-    uses: ./.github/workflows/entrypoint-python.yaml  
+    uses: ./.github/workflows/entrypoint-python.yaml
     with:
       target-platform: "lambda"
       environment: "dev"
