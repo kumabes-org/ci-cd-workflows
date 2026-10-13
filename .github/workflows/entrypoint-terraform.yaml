@@ -8,9 +8,9 @@ name: "Nested Entrypoint - Terraform CI/CD"
         required: true
         type: string
       environment:
-        required: false
+        description: "Nome do ambiente (ex: dev, prod)"
+        required: true
         type: string
-        default: "dev"
       action:
         description: "apply ou destroy"
         required: false
@@ -29,6 +29,10 @@ name: "Nested Entrypoint - Terraform CI/CD"
         type: string
         default: "1.9.0"
 
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+  
 jobs:
   ci-terraform:
     name: "CI"

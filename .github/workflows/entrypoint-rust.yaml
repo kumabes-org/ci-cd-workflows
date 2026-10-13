@@ -14,10 +14,9 @@ name: "Nested Entrypoint - Rust CI"
         type: string
         default: "rust-app"
       environment:
-        description: "Ambiente da aplicacao"
-        required: false
+        description: "Nome do ambiente (ex: dev, prod)"
+        required: true
         type: string
-        default: "ci"
       rust-version:
         description: "Toolchain Rust usada no CI"
         required: false
@@ -35,7 +34,8 @@ name: "Nested Entrypoint - Rust CI"
         default: true
 
 permissions:
-  contents: read
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
 
 jobs:
   rust-ci:

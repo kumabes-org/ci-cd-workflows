@@ -20,7 +20,8 @@ name: "Engine - Rust CI"
         default: true
 
 permissions:
-  contents: read
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
 
 jobs:
   quality-check:
