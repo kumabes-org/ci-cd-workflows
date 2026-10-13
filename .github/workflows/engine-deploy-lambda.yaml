@@ -22,6 +22,10 @@ name: "Engine - Deploy Lambda"
         required: false
         type: string
         default: "us-east-1"
+      working-directory:
+        required: false
+        type: string
+        default: "app"
 
 permissions:
   id-token: write   # This is required for requesting the JWT
@@ -30,6 +34,10 @@ permissions:
 jobs:
   deploy-lambda:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ inputs.working-directory }}    
     steps:
       - uses: actions/checkout@v7
 
