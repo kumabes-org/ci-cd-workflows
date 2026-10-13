@@ -50,10 +50,11 @@ jobs:
       - name: Deploy Lambda via Zip Package
         if: inputs.package-type == 'Zip'
         run: |
-          aws lambda update-function-code \
-            --function-name ${{ inputs.function-name }} \
-            --zip-file fileb://${{ inputs.artifact-path }} \
-            --region ${{ inputs.aws-region }}
+          ls -lrth --color
+          #aws lambda update-function-code \
+          #  --function-name ${{ inputs.function-name }} \
+          #  --zip-file fileb://${{ inputs.artifact-path }} \
+          #  --region ${{ inputs.aws-region }}
 
       - name: Deploy Lambda via Container Image
         if: inputs.package-type == 'Image'
