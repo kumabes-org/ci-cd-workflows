@@ -102,13 +102,13 @@ jobs:
       terraform-version: "1.6.6"
     secrets: inherit
 
-#call-entrypoint-python:
-#  needs: [static-analysis, unit-test-inline-scripts]
-#  uses: ./.github/workflows/entrypoint-python.yaml
-#  with:
-#    target-platform: "lambda"
-#    environment: "dev"
-#    app-name: "aws-lambda-python"
-#    aws-region: "us-east-1"
-#    working-directory: "validate-python-lambda-workflow/app"
-#  secrets: inherit
+  call-entrypoint-python:
+    needs: [static-analysis, unit-test-inline-scripts]
+    uses: ./.github/workflows/entrypoint-python.yaml
+    with:
+      target-platform: "lambda"
+      environment: "dev"
+      app-name: "aws-lambda-python"
+      aws-region: "us-east-1"
+      working-directory: "validate-python-lambda-workflow/app"
+    secrets: inherit
