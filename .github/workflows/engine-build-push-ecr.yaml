@@ -84,6 +84,7 @@ jobs:
         id: build-image
         uses: docker/build-push-action@v7
         with:
+          context: ${{ inputs.working-directory }}
           push: true
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
