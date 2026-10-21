@@ -79,7 +79,7 @@ jobs:
           echo "Conteudo do diretorio de trabalho:"
           pwd
           ls -lrth
-          
+
       - name: Build and Push Docker Image
         id: build-image
         uses: docker/build-push-action@v7
