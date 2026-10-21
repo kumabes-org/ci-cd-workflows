@@ -16,7 +16,7 @@ name: "Engine - Build and Push ECR"
       build-context:
         required: false
         type: string
-        default: "./app"
+        default: "."
       aws-region:
         required: false
         type: string
