@@ -102,7 +102,7 @@ jobs:
       terraform-version: "1.6.6"
     secrets: inherit
 
-  call-entrypoint-python:
+  call-entrypoint-python-lambda:
     needs: [static-analysis, unit-test-inline-scripts]
     uses: ./.github/workflows/entrypoint-python.yaml
     with:
@@ -111,4 +111,15 @@ jobs:
       app-name: "aws-lambda-python"
       aws-region: "us-east-1"
       working-directory: "validate-python-lambda-workflow/app"
+    secrets: inherit
+
+  call-entrypoint-python-ecs:
+    needs: [static-analysis, unit-test-inline-scripts]
+    uses: ./.github/workflows/entrypoint-python.yaml
+    with:
+      target-platform: "ecs"
+      environment: "dev"
+      app-name: "aws-ecs-python"
+      aws-region: "us-east-1"
+      working-directory: "validate-python-ecs-workflow/app"
     secrets: inherit
