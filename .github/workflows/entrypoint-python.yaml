@@ -62,6 +62,7 @@ jobs:
       ecr-repository: ${{ inputs.app-name }}
       image-tag: ${{ github.sha }}
       aws-region: ${{ inputs.aws-region }}
+      working-directory: ${{ inputs.working-directory }}
     secrets: inherit
 
   # Deploy condicional para ECS
