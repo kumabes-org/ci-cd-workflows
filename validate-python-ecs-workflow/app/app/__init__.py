@@ -1,5 +1,7 @@
 from flask import Flask
+
 from app.controllers.user_controller import user_bp
+
 
 def create_app():
     app = Flask(__name__)

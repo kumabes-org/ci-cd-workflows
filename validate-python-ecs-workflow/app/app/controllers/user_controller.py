@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify
+
 from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
 

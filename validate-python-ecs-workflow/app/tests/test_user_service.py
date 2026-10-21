@@ -1,6 +1,9 @@
 from unittest.mock import MagicMock
+
 import pytest
+
 from app.services.user_service import UserService
+
 
 def test_get_user_profile_success():
     # 1. Arrange (Preparação do Mock)
