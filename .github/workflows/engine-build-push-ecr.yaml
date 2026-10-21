@@ -61,6 +61,11 @@ jobs:
           REPO_NAME: ${{ inputs.ecr-repository }}
           AWS_REGION: ${{ inputs.aws-region }}
         run: |
+          echo "inputs.ecr-repository: ${{ inputs.ecr-repository }}"
+          echo "inputs.working-directory: ${{ inputs.working-directory }}"
+          pwd
+          ls -lrth --color
+
           echo "Verificando se o repositorio '$REPO_NAME' existe no ECR..."
           if ! aws ecr describe-repositories --repository-names "$REPO_NAME" --region "$AWS_REGION" >/dev/null 2>&1; then
             echo "Repositorio nao encontrado. Criando '$REPO_NAME'..."
